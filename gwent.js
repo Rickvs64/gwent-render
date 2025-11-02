@@ -3,7 +3,7 @@
 class Controller {}
 
 // Websocket and Server config
-const socket = new WebSocket('wss://gwent-render.onrender.com:6464');
+const socket = new WebSocket('wss://gwent-render.onrender.com');
 let amReady = false;
 let oponentReady = false;
 let playerId = null;
