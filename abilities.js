@@ -567,12 +567,11 @@ var ability_dict = {
 				// This mirrors what moveTo did (source.removeCard(card)).
 				source.removeCard(c);
 
+				// Keep card metadata consistent.
+				c.holder = holder;
+
 				// Append to the bottom of the deck array deterministically.
 				deck.cards.push(c);
-
-				// Keep card metadata consistent.
-				c.row = "deck";
-				c.holder = holder;
 
 				// Ensure visual representation matches the deck array (use existing deck helpers).
 				deck.addCardElement();
