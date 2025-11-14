@@ -6,12 +6,12 @@ class Controller {}
 // const socket = new WebSocket('ws://localhost:8080');				// Example line for when using local installation instead of remote deployment.
 const socket = new WebSocket('wss://gwent-render.onrender.com');	// Websocket + server is expected to be reachable on this URL. Disable if using local installation.
 let amReady = false;
-let oponentReady = false;
+let opponentReady = false;
 let playerId = null;
 
 const readyButtonElem = document.getElementById("start-game");
-const oponentReadyElem = document.getElementById("oponent-ready");
-const isOponentReadyElem = document.getElementById("oponent-ready");
+const opponentReadyElem = document.getElementById("opponent-ready");
+const isOpponentReadyElem = document.getElementById("opponent-ready");
 const passButton = document.getElementById("pass-button");
 const customizationElem = document.getElementById("deck-customization");
 const gameStartControlsElem = document.getElementById("session-start-control");
@@ -27,18 +27,18 @@ socket.onmessage = async(event) => {
 				console.log("Welcome, your id is " + playerId);
 				break;
 			
-			// Oponent has joined and the session is ready
+			// Opponent has joined and the session is ready
 			case "sessionReady":
 				readyButtonElem.classList.remove("disabled");
-				isOponentReadyElem.classList.remove("hidden");
-				// sends the oponent which faction you're playing with
+				isOpponentReadyElem.classList.remove("hidden");
+				// sends the opponent which faction you're playing with
 				socket.send(JSON.stringify({ type: "opChangeFaction", faction: dm.faction }));
 				break;
-			// Oponent has left and the session is no longer ready
+			// Opponent has left and the session is no longer ready
 			case "sessionUnready":
 				console.log("---------------------");
-				console.log("Oponent left the game");
-				isOponentReadyElem.classList.add("hidden");
+				console.log("Opponent left the game");
+				isOpponentReadyElem.classList.add("hidden");
 
 				readyButtonElem.classList.add("disabled");
 				if (game.roundCound > 0) {
@@ -51,9 +51,9 @@ socket.onmessage = async(event) => {
 				}
 				break;
 			
-			// Oponent is ready. If you are ready begin the game immediately
+			// Opponent is ready. If you are ready begin the game immediately
 			case "ready":
-				player_op = new Player(1, "Oponent", data.deck);
+				player_op = new Player(1, "Opponent", data.deck);
 				if (amReady) {
 					customizationElem.classList.add("hide");
 					gameStartControlsElem.classList.add("hide");
@@ -61,26 +61,26 @@ socket.onmessage = async(event) => {
 					game.startGame();
 					return
 				} else {
-					oponentReadyElem.classList.remove("disabled");
-					oponentReady = true;
+					opponentReadyElem.classList.remove("disabled");
+					opponentReady = true;
 				}
 				break;
 
 			case "opChangeFaction":
-				console.log("oponent has changed his faction");
-				oponentReadyElem.querySelector("img").src = `img/icons/deck_shield_${data.faction}.png`
+				console.log("opponent has changed his faction");
+				opponentReadyElem.querySelector("img").src = `img/icons/deck_shield_${data.faction}.png`
 				break;
 			
 			case "unReady":
-				oponentReady = false;
-				oponentReadyElem.classList.add("disabled");
+				opponentReady = false;
+				opponentReadyElem.classList.add("disabled");
 				if (amReady) {
 					readyButtonElem.classList.remove("ready");
 					customizationElem.classList.remove("noclick");
 				}
 				break;
 			
-			// Initializes Oponent's updated Hand and Deck
+			// Initializes Opponent's updated Hand and Deck
 			case "initial_reDraw":
 				data.deck = fillCardElements(data.deck, player_op);
 				data.hand = fillCardElements(data.hand, player_op);
@@ -98,10 +98,10 @@ socket.onmessage = async(event) => {
 				tocar("game_start", false);
 				break;
 
-			// Game - Oponent plays card
+			// Game - Opponent plays card
 			case "play":
 				const card = player_op.hand.cards.find(c => c.filename === data.card.filename);
-				console.log("Oponent plays card", card);
+				console.log("Opponent plays card", card);
 
 				const splitRowName = data.row.split("-");
 				let row
@@ -127,12 +127,12 @@ socket.onmessage = async(event) => {
 					await player_op.playCardToRow(card, row);
 				break;
 
-			// Game - Oponent pass
+			// Game - Opponent pass
 			case "pass":
 				player_op.passRound();
 				break;
 
-			// Game - Oponent used the leader card
+			// Game - Opponent used the leader card
 			case "useLeader":
 				player_op.activateLeader()
 				break;
@@ -147,8 +147,8 @@ function fillCardElements (cards, player) {
 	return cards
 }
 
-// Oponent Controller
-class ControllerOponent {
+// Opponent Controller
+class ControllerOpponent {
 	constructor(player) {
 		player.tag = "op";
 
@@ -161,9 +161,9 @@ class Player {
 	constructor(id, name, deck) {
 		this.id = id;
 		this.tag = "me";
-		this.controller = (id === 0) ? new Controller() : new ControllerOponent(this);
+		this.controller = (id === 0) ? new Controller() : new ControllerOpponent(this);
 
-		this.hand = (id === 0) ? new Hand(document.getElementById("hand-row")) : new HandOponent();
+		this.hand = (id === 0) ? new Hand(document.getElementById("hand-row")) : new HandOpponent();
 		this.grave =  new Grave( document.getElementById("grave-" + this.tag));
 		this.deck = new Deck(deck.faction, document.getElementById("deck-" + this.tag));
 		this.deck_data = deck;
@@ -619,8 +619,8 @@ class Deck extends CardContainer {
 	}
 }
 
-// Hand used by Oponent. Has an offscreen HTML element for card transitions.
-class HandOponent extends CardContainer {
+// Hand used by Opponent. Has an offscreen HTML element for card transitions.
+class HandOpponent extends CardContainer {
 	constructor() {
 		super(undefined);
 		this.counter = document.getElementById("hand-count-op"); 
@@ -1069,7 +1069,7 @@ class Game {
 	// Initializes player abilities, hands and waits for cointoss
 	async startGame() {
 		gameStartControlsElem.classList.add("hide");
-		isOponentReadyElem.classList.add("hidden");
+		isOpponentReadyElem.classList.add("hidden");
 		ui.toggleMusic_elem.style.left = "26vw"
 
 		ui.toggleMusic_elem.classList.remove("music-customization");
@@ -1280,7 +1280,7 @@ class Game {
 	returnToCustomization(){
 		socket.send(JSON.stringify({ type: "unReady" }));
 		amReady = false;
-		oponentReady = false;
+		opponentReady = false;
 		readyButtonElem.classList.remove("ready");
 		
 		ui.toggleMusic_elem.style.left = "20.5vw"
@@ -1627,16 +1627,16 @@ class UI {
 	
 	// Called when the player selects a selectable CardContainer
 	// LEO - aqui de fato coloca a carta na coluna.
-	async selectRow(row, oponentCard = null){
+	async selectRow(row, opponentCard = null){
 		this.lastRow = row;
 
-		if (this.previewCard === null && oponentCard === null) {
+		if (this.previewCard === null && opponentCard === null) {
 			await ui.viewCardsInContainer(row);
 			return;
 		}
 
 		const nomeColuna = this.lastRow.elem.id === "weather" ? this.lastRow.elem.id : this.lastRow.elem_parent.id
-		const playedCard = removeCircularReferences(this.previewCard || oponentCard);
+		const playedCard = removeCircularReferences(this.previewCard || opponentCard);
 
 		console.log("You played the card", this.previewCard)
 		if (this.previewCard.name === "Decoy")
@@ -1644,7 +1644,7 @@ class UI {
 
 		socket.send(JSON.stringify({ type: "play", player: playerId, card: playedCard, row: nomeColuna}));
 
-		let card = this.previewCard || oponentCard;
+		let card = this.previewCard || opponentCard;
 		let holder = card.holder;
 		this.hidePreview();
 		this.enablePlayer(false);
@@ -1733,7 +1733,7 @@ class UI {
 			"op-white-flame" : "turn_op",
 			"nilfgaard-wins-draws" : "turn_op",
 			"sv-err": "server_error",
-			"win-opleft" : "oponent_left"
+			"win-opleft" : "opponent_left"
 		}
 		var temSom = new Array();
 		for (var x in guia2) temSom[temSom.length] = x;
@@ -2340,7 +2340,7 @@ class DeckMaker {
 		player_me = new Player(0, "you", me_deck );
 		socket.send(JSON.stringify({ type: "ready", deck: me_deck }));
 		amReady = true;
-		if (oponentReady) {
+		if (opponentReady) {
 			this.elem.classList.add("hide");
 			game.startGame();
 		}
@@ -2447,7 +2447,7 @@ async function translateTo(card, container_source, container_dest){
 	if (container_dest instanceof Row && container_dest.cards.length !== 0 && !card.isSpecial() ){
 		x += (container_dest.getSortedIndex(card) === container_dest.cards.length) ? elem.offsetWidth/2 : -elem.offsetWidth/2;
 	}
-	if (card.holder.controller instanceof ControllerOponent)
+	if (card.holder.controller instanceof ControllerOpponent)
 		x += elem.offsetWidth/2;
 	if (container_source instanceof Row && container_dest instanceof Grave && !card.isSpecial()) {
 		let mid = trueOffset(container_source.elem, true) + container_source.elem.offsetWidth/2;
@@ -2477,7 +2477,7 @@ async function translateTo(card, container_source, container_dest){
 	
 	// Returns the source container's element to transition from
 	function getSourceElem(card, source, dest){
-		if (source instanceof HandOponent)
+		if (source instanceof HandOpponent)
 			return source.hidden_elem;
 		if (source instanceof Deck)
 			return source.elem.children[source.elem.children.length-2];
@@ -2486,7 +2486,7 @@ async function translateTo(card, container_source, container_dest){
 
 	// Returns the destination container's element to transition to
 	function getDestinationElem(card, source, dest){
-		if (dest instanceof HandOponent)
+		if (dest instanceof HandOpponent)
 			return dest.hidden_elem;
 		if (card.isSpecial() && dest instanceof Row)
 			return dest.elem_special;

@@ -144,9 +144,9 @@ var ability_dict = {
 				});
 				wrapper.card = units[0];
 			
-			} else if (card.holder.controller instanceof ControllerOponent) {
-				console.log("Oponent has played a medic, wait for him to chose which card to respawn")
-				// Wait for the oponent to choose which card to revive
+			} else if (card.holder.controller instanceof ControllerOpponent) {
+				console.log("Opponent has played a medic, wait for him to chose which card to respawn")
+				// Wait for the opponent to choose which card to revive
 				wrapper.card = await new Promise((resolve) => {
 					const handleMessage = async (event) => {
 						const data = JSON.parse(event.data);
@@ -248,8 +248,8 @@ var ability_dict = {
 	emhyr_emperor: {
 		description: "Look at 3 random cards from your opponent's hand.",
 		activated: async card => {
-			// Wait for the oponent to close the carousel
-			if (card.holder.controller instanceof ControllerOponent) {
+			// Wait for the opponent to close the carousel
+			if (card.holder.controller instanceof ControllerOpponent) {
 				await new Promise((resolve) => {
 					const handleMessage = async (event) => {
 						const data = JSON.parse(event.data);
@@ -282,7 +282,7 @@ var ability_dict = {
 			if (grave.findCards(c => c.isUnit()).length === 0)
 				return;
 			
-			if (card.holder.controller instanceof ControllerOponent) {
+			if (card.holder.controller instanceof ControllerOpponent) {
 				const newCard = await new Promise((resolve) => {
 					const handleMessage = async (event) => {
 						const data = JSON.parse(event.data);
@@ -339,7 +339,7 @@ var ability_dict = {
 			}
 			
 			let newCard;
-			if (card.holder.controller instanceof ControllerOponent) {
+			if (card.holder.controller instanceof ControllerOpponent) {
 				newCard = await new Promise((resolve) => {
 					const handleMessage = async (event) => {
 						const data = JSON.parse(event.data);
@@ -367,7 +367,7 @@ var ability_dict = {
 		activated: async (card) => {
 			let hand = board.getRow(card, "hand", card.holder);
 			let deck = board.getRow(card, "deck", card.holder);
-			if (card.holder.controller instanceof ControllerOponent) {
+			if (card.holder.controller instanceof ControllerOpponent) {
 				// Wait for the opponent to choose which cards to discard and which to get
 				await new Promise((resolve) => {
 					let flag = 0;
@@ -448,7 +448,7 @@ var ability_dict = {
 			let deck = board.getRow(card, "deck", card.holder);
 
 			// Wait for the opponent to choose which weather card to play
-			if (card.holder.controller instanceof ControllerOponent) {
+			if (card.holder.controller instanceof ControllerOpponent) {
 				const card = await new Promise((resolve) => {
 					const handleMessage = async (event) => {
 						const data = JSON.parse(event.data);
